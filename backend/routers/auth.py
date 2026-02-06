@@ -148,7 +148,6 @@ async def login(login_data: LoginRequest, db: AsyncSession = Depends(get_db)):
     
     return {"access_token": access_token, "token_type": "bearer"}
 
-from typing import Optional
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login", auto_error=False)

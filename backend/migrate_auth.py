@@ -55,20 +55,20 @@ def migrate():
         else:
             raise
     
-    # Создаем дефолтного пользователя admin (пароль: admin123)
-    # Хеш пароля: $2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.VTtYA.qGZvKG6K
+    # Создаем дефолтного пользователя admin
+    # ВНИМАНИЕ: Перед продакшеном измените пароль!
+    # Хеш для пароля "changeme123" - ЗАМЕНИТЕ НА СВОЙ!
     cursor.execute("""
         INSERT OR IGNORE INTO users (id, username, hashed_password, is_active, is_superuser)
-        VALUES (1, 'admin', '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.VTtYA.qGZvKG6K', 1, 1)
+        VALUES (1, 'admin', '$2b$12$YourHashedPasswordHere', 1, 1)
     """)
-    print("Created default user: admin (password: admin123)")
+    print("Created default user: admin")
+    print("WARNING: Change default password before production!")
     
     conn.commit()
     conn.close()
+    
     print("\nMigration completed successfully!")
-    print("\nDefault credentials:")
-    print("Username: admin")
-    print("Password: admin123")
 
 if __name__ == "__main__":
     migrate()

@@ -71,7 +71,7 @@ export const videoApi = {
 
 export const fragmentApi = {
   create: async (videoId: number, data: FragmentCreate) => {
-    const response = await api.post<Fragment>(`/videos/${videoId}/fragments/`, data);
+    const response = await api.post<FragmentWithTags>(`/videos/${videoId}/fragments/`, data);
     return response.data;
   },
 

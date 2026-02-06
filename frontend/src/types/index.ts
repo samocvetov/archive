@@ -15,7 +15,7 @@ export interface Video {
 
 export interface VideoWithTags extends Video {
   tags: Tag[];
-  fragments: Fragment[];
+  fragments: FragmentWithTags[];
 }
 
 export interface Fragment {

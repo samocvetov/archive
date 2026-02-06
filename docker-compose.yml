@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: archive-backend
+    restart: always
+    volumes:
+      - ./data:/app/data
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///./data/archive.db
+      - SECRET_KEY=${SECRET_KEY:-your-secret-key-change-in-production}
+      - UPLOAD_DIR=/app/data/uploads
+      - FRAGMENTS_DIR=/app/data/uploads/fragments
+      - MAX_UPLOAD_SIZE=2147483648
+      - YANDEX_CLIENT_ID=${YANDEX_CLIENT_ID:-}
+      - YANDEX_CLIENT_SECRET=${YANDEX_CLIENT_SECRET:-}
+    ports:
+      - "8000:8000"
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build: ./frontend
+    container_name: archive-frontend
+    restart: always
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    command: npm run dev -- --host 0.0.0.0
+
+  nginx:
+    image: nginx:alpine
+    container_name: archive-nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./data:/var/www/static:ro
+    depends_on:
+      - backend
+      - frontend

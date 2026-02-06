@@ -30,6 +30,8 @@ export interface Fragment {
   video_filepath?: string;  // Path to fragment video file
   video_file_size?: number;
   created_at: string;
+  tags?: Tag[];  // Optional tags for flexibility
+  video?: Video; // Optional video reference
 }
 
 export interface FragmentWithTags extends Fragment {

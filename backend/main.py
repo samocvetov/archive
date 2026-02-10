@@ -36,7 +36,8 @@ app.include_router(fragments.router, prefix="/api")
 app.include_router(fragments.global_router, prefix="/api")
 app.include_router(tags.router, prefix="/api")
 
-app.mount("/static", StaticFiles(directory=settings.UPLOAD_DIR), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/fragments", StaticFiles(directory="static/uploads/fragments"), name="fragments")
 
 @app.get("/")
 async def root():

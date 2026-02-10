@@ -8,12 +8,19 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'http://10.130.107.179:8001',
         changeOrigin: true,
+        secure: false,
       },
       '/static': {
-        target: 'http://localhost:8000',
+        target: 'http://10.130.107.179:8001',
         changeOrigin: true,
+        secure: false,
+      },
+      '/fragments': {
+        target: 'http://10.130.107.179:8001',
+        changeOrigin: true,
+        secure: false,
       },
     },
   },

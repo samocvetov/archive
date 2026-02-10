@@ -92,7 +92,7 @@ export function VideoList() {
             >
               <div className="aspect-video bg-gray-200 flex items-center justify-center">
                 <img
-                  src={`/static/thumbnails/${video.id}.jpg`}
+                  src={`/static/uploads/thumbnails/${video.id}.jpg`}
                   alt={video.title || video.original_filename}
                   className="w-full h-full object-cover"
                   onError={(e) => {

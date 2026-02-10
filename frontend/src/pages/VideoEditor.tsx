@@ -194,7 +194,7 @@ export function VideoEditor() {
             <div>
               <div className="bg-black rounded-lg overflow-hidden aspect-video">
                 <ReactPlayer
-                  url={`/static/${selectedFragment.video_filepath}`}
+                  url={encodeURI(`/static/uploads/${selectedFragment.video_filepath}`)}
                   width="100%"
                   height="100%"
                   controls
@@ -215,11 +215,12 @@ export function VideoEditor() {
             <div className="bg-black rounded-lg overflow-hidden aspect-video">
               <ReactPlayer
                 ref={playerRef}
-                url={`/static/${video.filename}`}
+                url={encodeURI(`/static/uploads/${video.filename.replace('.avi', '.mp4')}`)}
                 width="100%"
                 height="100%"
                 controls
                 onProgress={(state) => setCurrentTime(state.playedSeconds)}
+                progressInterval={100}
               />
             </div>
           ) : (

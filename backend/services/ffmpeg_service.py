@@ -8,8 +8,8 @@ from config import settings
 
 class FFmpegService:
     def __init__(self):
-        self.ffmpeg_path = settings.FFmpeg_PATH or "ffmpeg"
-        self.ffprobe_path = settings.FFmpeg_PATH or "ffprobe"
+        self.ffmpeg_path = "ffmpeg"
+        self.ffprobe_path = "ffprobe"
     
     async def get_video_info(self, filepath: str) -> dict:
         cmd = [
@@ -92,7 +92,7 @@ class FFmpegService:
         self,
         input_path: str,
         output_path: str,
-        timestamp: float = 5.0,
+        timestamp: float = 1.0,
         width: int = 320,
         height: int = 180
     ) -> str:
@@ -106,6 +106,7 @@ class FFmpegService:
             "-i", input_path,
             "-vframes", "1",
             "-vf", f"scale={width}:{height}",
+            "-update", "1",
             output_path
         ]
         

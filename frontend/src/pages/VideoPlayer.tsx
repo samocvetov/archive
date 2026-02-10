@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ReactPlayer from 'react-player';
 import { VideoWithTags, FragmentWithTags } from '../types';
@@ -10,6 +10,7 @@ export function VideoPlayer() {
   const [video, setVideo] = useState<VideoWithTags | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
+  const playerRef = useRef<ReactPlayer>(null);
 
   useEffect(() => {
     loadData();
@@ -34,9 +35,8 @@ export function VideoPlayer() {
   };
 
   const handleJumpToFragment = (startTime: number) => {
-    const player = document.querySelector('video');
-    if (player) {
-      player.currentTime = startTime;
+    if (playerRef.current) {
+      playerRef.current.seekTo(startTime, 'seconds');
     }
   };
 
@@ -69,11 +69,13 @@ export function VideoPlayer() {
       {video.filepath ? (
         <div className="bg-black rounded-lg overflow-hidden aspect-video">
           <ReactPlayer
-            url={`/static/${video.filename}`}
+            ref={playerRef}
+            url={encodeURI(`/static/uploads/${video.filename.replace('.avi', '.mp4')}`)}
             width="100%"
             height="100%"
             controls
             onProgress={(state) => setCurrentTime(state.playedSeconds)}
+            progressInterval={100}
           />
         </div>
       ) : (

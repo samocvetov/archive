@@ -104,6 +104,44 @@ async def upload_video(
         # Don't fail if thumbnail generation fails
         pass
     
+    # Конвертируем AVI в MP4 для лучшей совместимости с браузерами
+    if file.filename.lower().endswith('.avi'):
+        try:
+            mp4_filename = unique_filename.replace('.avi', '.mp4')
+            mp4_path = os.path.join(settings.UPLOAD_DIR, mp4_filename)
+            
+            logger.debug(f"Converting AVI to MP4: {upload_path} -> {mp4_path}")
+            
+            cmd = [
+                settings.FFMPEG_PATH,
+                "-y",
+                "-i", str(upload_path),
+                "-c:v", "libx264",
+                "-c:a", "aac", 
+                "-preset", "medium",
+                mp4_path
+            ]
+            
+            process = await asyncio.create_subprocess_exec(*cmd)
+            await process.wait()
+            
+            if process.returncode == 0:
+                # Обновляем запись в базе данных
+                video.filepath = f"static/uploads/{mp4_filename}"
+                video.filename = mp4_filename
+                video.mime_type = "video/mp4"
+                await db.commit()
+                logger.debug(f"Successfully converted to MP4: {mp4_filename}")
+                
+                # Удаляем исходный AVI файл
+                os.remove(upload_path)
+                logger.debug(f"Removed original AVI file: {upload_path}")
+            else:
+                logger.error("MP4 conversion failed")
+        except Exception as e:
+            logger.error(f"AVI to MP4 conversion error: {str(e)}")
+            # Don't fail upload if conversion fails
+    
     return video
 
 @router.get("/", response_model=List[VideoSchema])

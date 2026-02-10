@@ -9,7 +9,7 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 
 from database import get_db
-from models import User, CaptchaSession
+from models import User as UserModel, CaptchaSession
 from schemas import UserCreate, User, CaptchaResponse, LoginRequest, Token
 from config import settings
 
@@ -62,9 +62,11 @@ async def get_captcha(db: AsyncSession = Depends(get_db)):
     
     # Очищаем старые капчи (старше 10 минут)
     old_time = datetime.utcnow() - timedelta(minutes=10)
+    from sqlalchemy import delete
     await db.execute(
-        select(CaptchaSession).where(CaptchaSession.created_at < old_time)
+        delete(CaptchaSession).where(CaptchaSession.created_at < old_time)
     )
+    await db.commit()
     
     return CaptchaResponse(session_id=session_id, question=question)
 
@@ -72,7 +74,7 @@ async def get_captcha(db: AsyncSession = Depends(get_db)):
 async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
     """Регистрация нового пользователя"""
     # Проверяем, что пользователь не существует
-    result = await db.execute(select(User).where(User.username == user_data.username))
+    result = await db.execute(select(UserModel).where(UserModel.username == user_data.username))
     if result.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -80,7 +82,7 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
         )
     
     # Создаем пользователя
-    db_user = User(
+    db_user = UserModel(
         username=user_data.username,
         email=user_data.email,
         hashed_password=get_password_hash(user_data.password)
@@ -123,7 +125,7 @@ async def login(login_data: LoginRequest, db: AsyncSession = Depends(get_db)):
     await db.commit()
     
     # Проверяем пользователя
-    result = await db.execute(select(User).where(User.username == login_data.username))
+    result = await db.execute(select(UserModel).where(UserModel.username == login_data.username))
     user = result.scalar_one_or_none()
     
     if not user or not verify_password(login_data.password, user.hashed_password):
@@ -152,24 +154,24 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login", auto_error=False)
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> Optional[User]:
+async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> Optional[UserModel]:
     """Получить текущего пользователя из токена (опционально)"""
     if not token:
         return None
     
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        username: str = payload.get("sub")
+        username = payload.get("sub")
         if username is None:
             return None
     except JWTError:
         return None
     
-    result = await db.execute(select(User).where(User.username == username))
+    result = await db.execute(select(UserModel).where(UserModel.username == username))
     user = result.scalar_one_or_none()
     return user
 
-async def get_current_active_user(current_user: User = Depends(get_current_user)) -> User:
+async def get_current_active_user(current_user: UserModel = Depends(get_current_user)) -> UserModel:
     """Проверить что пользователь активен (обязательно)"""
     if current_user is None:
         raise HTTPException(
